@@ -1,0 +1,15 @@
+{
+    "name": "naveengiri/top-social-share",
+    "autoload": {
+        "psr-4": {
+            "TSS\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Naveen giri",
+            "email": "1naveengiri@gmail.com"
+        }
+    ],
+    "require": {}
+}
