@@ -24,7 +24,18 @@
  * Domain Path:     /languages
  */
 
-/* Exit if accessed directly */
-if ( ! defined( 'ABSPATH' ) ) {
-	return;
+// If this file is called directly, abort.
+defined( 'ABSPATH' ) || exit;
+
+
+// Define plugin constants.
+if ( ! defined( 'TSS_PLUGINS_URL' ) ) {
+	define( 'TSS_PLUGINS_URL',  plugin_dir_url( __FILE__ ) );
 }
+
+if ( ! defined( 'TSS_PLUGINS_PATH' ) ) {
+	define( 'TSS_PLUGINS_PATH',  plugin_dir_path( __FILE__ ) );
+}
+
+// Load the plugin files.
+require_once TSS_PLUGINS_PATH . 'src/class-loader.php';
