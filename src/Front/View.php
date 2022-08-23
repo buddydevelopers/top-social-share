@@ -22,12 +22,12 @@ defined( 'ABSPATH' ) || exit;
  */
 class View{
 
-	/**
-	 * Class constructor
-	 */
-	public function __construct() {
-		# ...
-	}
+    /**
+     * Class constructor
+     */
+    public function __construct() {
+        # ...
+    }
 
     /**
      * Load view files.
