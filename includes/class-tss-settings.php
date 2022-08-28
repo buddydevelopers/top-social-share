@@ -254,7 +254,7 @@ class TSS_Settings {
 			if ( 'attachment' !== $post_type ) {
 				?>
 				<input type="checkbox" id="<?php echo esc_attr( $args['label_for'] . $post_type ); ?>" name="tss_options[<?php echo esc_attr( $args['label_for'] . $post_type ); ?>]" value="1" <?php checked( 1, $is_checked, true ); ?>/>
-				<label for="<?php echo esc_attr( $args['label_for'] . $post_type ); ?>"><?php echo esc_attr__( $post_type, 'top-social-share' ); ?></label>
+				<label for="<?php echo esc_attr( $args['label_for'] . $post_type ); ?>"><?php echo esc_html( ucfirst( $post_type ) ); ?></label>
 				<?php
 			}
 		}
