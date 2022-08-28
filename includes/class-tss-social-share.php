@@ -125,10 +125,12 @@ class TSS_Social_Share {
 	 * Function to display social sharing options on left.
 	 */
 	public function tss_display_social_left() {
-		$display_left = array_key_exists( 'tss_field_icon_placement_floating_left', $this->tss_option );
-		if ( $display_left ) {
-			$tss_icons = $this->build_the_tss_icons();
-			echo '<div class="tss-share-floating-bar">' . $tss_icons . '</div>';
+		$current_post_type = get_post_type( get_the_ID() );
+		if ( ( is_singular() || is_page() ) && array_key_exists( 'tss_field_post_types_' . $current_post_type, $this->tss_option ) ) {
+			if ( array_key_exists( 'tss_field_icon_placement_floating_left', $this->tss_option ) ) {
+				$tss_icons = $this->build_the_tss_icons();
+				echo '<div class="tss-share-floating-bar">' . $tss_icons . '</div>';
+			}
 		}
 	}
 

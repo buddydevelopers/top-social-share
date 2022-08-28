@@ -230,7 +230,7 @@ class TSS_Settings {
 	 */
 	public function tss_intro_section_cb( $args ) {
 		?>
-		<p id="<?php echo esc_attr( $args['id'] ); ?>"><?php echo esc_html__( 'Top Social share plugin also provide a shortcode to embed the social sharing buttons in your website content, you can use the <code>[top-share]</code>, and the butttons will appear.', 'top-social-share' ); ?></p>
+		<p id="<?php echo esc_attr( $args['id'] ); ?>"><?php echo wp_kses_data( 'Top Social share plugin also provide a shortcode to embed the social sharing buttons in your website content, you can use the <code>[top-share]</code>, and the butttons will appear.', 'top-social-share' ); ?></p>
 		<?php
 	}
 
@@ -456,7 +456,7 @@ class TSS_Settings {
 						data-custom="<?php echo esc_attr( $args['tss_custom_data'] ); ?>"
 						name="tss_options[<?php echo esc_attr( $args['label_for'] . '_floating_left' ); ?>]"
 						value="1" <?php checked( 1, $floating_left, true ); ?>/>
-					<label for="<?php echo esc_attr( $args['label_for'] . '_floating_left' ); ?>"><?php echo esc_html__( 'Floating Left (will display on every page, regardless of post type selection above)', 'top-social-share' ); ?></label>
+					<label for="<?php echo esc_attr( $args['label_for'] . '_floating_left' ); ?>"><?php echo esc_html__( 'Floating Left', 'top-social-share' ); ?></label>
 				</li>
 				<li>
 					<input type="checkbox" id="<?php echo esc_attr( $args['label_for'] . '_below_post_title' ); ?>"
