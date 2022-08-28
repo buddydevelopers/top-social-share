@@ -1,3 +1,11 @@
+/**
+ * File add custom js operations like
+ * - make social sharing icon sortable
+ * - add color picker js
+ *
+ * @package TSS
+ */
+
 jQuery( document ).ready(
 	function(){
 		// Add color picker.
@@ -20,7 +28,7 @@ jQuery( document ).ready(
 		/**
 		 * Function used to track and handle sorted social options.
 		 *
-		 * this function creates hidden field to track reordered item lists.
+		 * This function creates hidden field to track reordered item lists.
 		 */
 		var to_input = function(this_sortable){
 			// Clear any previous hidden inputs for storing chosen services.

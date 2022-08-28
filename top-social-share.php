@@ -29,30 +29,30 @@ defined( 'ABSPATH' ) || exit;
 
 // Define plugin constants.
 if ( ! defined( 'TSS_PLUGINS_URL' ) ) {
-	define( 'TSS_PLUGINS_URL',  plugin_dir_url( __FILE__ ) );
+	define( 'TSS_PLUGINS_URL', plugin_dir_url( __FILE__ ) );
 }
 // Define plugin path.
 if ( ! defined( 'TSS_PLUGINS_PATH' ) ) {
-	define( 'TSS_PLUGINS_PATH',  plugin_dir_path( __FILE__ ) );
+	define( 'TSS_PLUGINS_PATH', plugin_dir_path( __FILE__ ) );
 }
 // Define plugin version.
 if ( ! defined( 'TSS_PLUGINS_VERSION' ) ) {
 	define( 'TSS_PLUGINS_VERSION', '1.0.0' );
 }
 
-/**
- * Function to call required plugin files on activation.
- */
-if( !function_exists( 'tss_plugin_activate' ) ){
+if ( ! function_exists( 'tss_plugin_activate' ) ) {
+	/**
+	 * Function to call required plugin files on activation.
+	 */
 	function tss_plugin_activate() {
 		// include all required files here.
-		if ( is_admin() ){ // only load setting file when it is admin panel.
-			require_once( TSS_PLUGINS_PATH . 'includes/class-tss-settings.php' );
-		} else{ // If it is not admin panel load this file to display social share buttons.
-			require_once( TSS_PLUGINS_PATH . 'includes/class-tss-social-share.php' );
+		if ( is_admin() ) { // only load setting file when it is admin panel.
+			require_once TSS_PLUGINS_PATH . 'includes/class-tss-settings.php';
+		} else { // If it is not admin panel load this file to display social share buttons.
+			require_once TSS_PLUGINS_PATH . 'includes/class-tss-social-share.php';
 		}
 		// Load all common functions.
-		require_once( TSS_PLUGINS_PATH . 'includes/functions.php' );
+		require_once TSS_PLUGINS_PATH . 'includes/functions.php';
 	}
 	add_action( 'plugins_loaded', 'tss_plugin_activate' );
 }
