@@ -13,4 +13,4 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 $option_name = 'tss_options';
 
 // Delete the pluin setting option data.
-delete_option($option_name);
+delete_option( $option_name );
