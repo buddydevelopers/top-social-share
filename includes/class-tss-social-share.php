@@ -83,38 +83,41 @@ class TSS_Social_Share {
 		} else {
 			$tss_size_option = '';
 		}
-		$html = '<div class="tss-social-div"><style>' . $additional_icon_color_style . '</style><ul>';
 		global $post;
-		$post_permalink             = get_permalink( $post->ID );
-		$post_title                 = $post->ID;
-		$post_attachment_url        = wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) );
-		$tss_social_buttons         = tss_social_sharing_options();
-		$social_share_options_count = count( $tss_social_buttons );
-		if ( array_key_exists( 'tss_social_icon_order_1', $this->tss_option ) ) {
-			// load reorderd options.
-			for ( $tss_icon = 0; $tss_icon < $social_share_options_count; $tss_icon++ ) {
-				if ( array_key_exists( 'tss_social_icon_order_' . $tss_icon, $this->tss_option ) ) {
-					$tss_social_icon = $this->tss_option[ 'tss_social_icon_order_' . $tss_icon ];
-					if ( ! empty( $tss_social_buttons[ $tss_social_icon ] ) ) {
-						$share_btn_link = $this->tss_social_share_link( $tss_social_icon );
-						if ( array_key_exists( 'tss_field_share_buttons_' . $tss_social_icon, $this->tss_option ) && ! empty( $share_btn_link ) ) {
-							$img   = ! empty( $tss_social_buttons[ $tss_social_icon ]['img'] ) ? $tss_social_buttons[ $tss_social_icon ]['img'] : esc_attr( $tss_social_buttons[ $tss_social_icon ]['label'] );
-							$html .= '<li data-tss-icon-name="' . esc_attr( $tss_social_icon ) . '" class="' . $tss_size_option . '"><a ' . $share_btn_link . ' title="' . esc_attr( $tss_social_buttons[ $tss_social_icon ]['label'] ) . '">' . $img . '</a></li>';
+		$html = '';
+		if ( ! empty( $post->ID ) ) {
+			$html                       = '<div class="tss-social-div"><style>' . $additional_icon_color_style . '</style><ul>';
+			$post_permalink             = get_permalink( $post->ID );
+			$post_title                 = $post->ID;
+			$post_attachment_url        = wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) );
+			$tss_social_buttons         = tss_social_sharing_options();
+			$social_share_options_count = count( $tss_social_buttons );
+			if ( array_key_exists( 'tss_social_icon_order_1', $this->tss_option ) ) {
+				// load reorderd options.
+				for ( $tss_icon = 0; $tss_icon < $social_share_options_count; $tss_icon++ ) {
+					if ( array_key_exists( 'tss_social_icon_order_' . $tss_icon, $this->tss_option ) ) {
+						$tss_social_icon = $this->tss_option[ 'tss_social_icon_order_' . $tss_icon ];
+						if ( ! empty( $tss_social_buttons[ $tss_social_icon ] ) ) {
+							$share_btn_link = $this->tss_social_share_link( $tss_social_icon, $post->ID );
+							if ( array_key_exists( 'tss_field_share_buttons_' . $tss_social_icon, $this->tss_option ) && ! empty( $share_btn_link ) ) {
+								$img   = ! empty( $tss_social_buttons[ $tss_social_icon ]['img'] ) ? $tss_social_buttons[ $tss_social_icon ]['img'] : esc_attr( $tss_social_buttons[ $tss_social_icon ]['label'] );
+								$html .= '<li data-tss-icon-name="' . esc_attr( $tss_social_icon ) . '" class="' . $tss_size_option . '"><a ' . $share_btn_link . ' title="' . esc_attr( $tss_social_buttons[ $tss_social_icon ]['label'] ) . '">' . $img . '</a></li>';
+							}
 						}
 					}
 				}
-			}
-		} else {
-			// load default options.
-			foreach ( $tss_social_buttons as $button_slug => $tss_social_button ) {
-				$share_btn_link = $this->tss_social_share_link( $button_slug );
-				if ( array_key_exists( 'tss_field_share_buttons_' . $button_slug, $this->tss_option ) && ! empty( $share_btn_link ) ) {
-					$img   = ! empty( $tss_social_buttons[ $button_slug ]['img'] ) ? $tss_social_buttons[ $button_slug ]['img'] : esc_attr( $tss_social_buttons[ $button_slug ]['label'] );
-					$html .= '<li data-tss-icon-name="' . esc_attr( $button_slug ) . '" class="' . $tss_size_option . '"><a ' . $share_btn_link . ' title="' . esc_attr( $tss_social_buttons[ $button_slug ]['label'] ) . '">' . $img . '</a></li>';
+			} else {
+				// load default options.
+				foreach ( $tss_social_buttons as $button_slug => $tss_social_button ) {
+					$share_btn_link = $this->tss_social_share_link( $button_slug, $post->ID );
+					if ( array_key_exists( 'tss_field_share_buttons_' . $button_slug, $this->tss_option ) && ! empty( $share_btn_link ) ) {
+						$img   = ! empty( $tss_social_buttons[ $button_slug ]['img'] ) ? $tss_social_buttons[ $button_slug ]['img'] : esc_attr( $tss_social_buttons[ $button_slug ]['label'] );
+						$html .= '<li data-tss-icon-name="' . esc_attr( $button_slug ) . '" class="' . $tss_size_option . '"><a ' . $share_btn_link . ' title="' . esc_attr( $tss_social_buttons[ $button_slug ]['label'] ) . '">' . $img . '</a></li>';
+					}
 				}
 			}
+			$html .= '</ul></div>';
 		}
-		$html .= '</ul></div>';
 		return $html;
 	}
 
@@ -122,7 +125,6 @@ class TSS_Social_Share {
 	 * Function to display social sharing options on left.
 	 */
 	public function tss_display_social_left() {
-		global $post;
 		$display_left = array_key_exists( 'tss_field_icon_placement_floating_left', $this->tss_option );
 		if ( $display_left ) {
 			$tss_icons = $this->build_the_tss_icons();
@@ -176,13 +178,16 @@ class TSS_Social_Share {
 	 * Function return link href attribute based on social share option.
 	 *
 	 * @param String $option social share option name.
+	 * @param int    $post_id current post id.
 	 */
-	public function tss_social_share_link( $option ) {
-
-		global $post;
-		$post_permalink      = get_permalink( $post->ID );
-		$post_title          = ! empty( $post->post_title ) ? $post->post_title : '';
-		$post_attachment_url = wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) );
+	public function tss_social_share_link( $option, $post_id ) {
+		if ( empty( $post_id ) ) {
+			global $post;
+			$post_id = $post->ID;
+		}
+		$post_permalink      = get_permalink( $post_id );
+		$post_title          = get_the_title( $post_id );
+		$post_attachment_url = wp_get_attachment_url( get_post_thumbnail_id( $post_id ) );
 		$link                = ''; // if link is empty, the social icon will not appear ( specially for whatsapp icon).
 		switch ( $option ) {
 
