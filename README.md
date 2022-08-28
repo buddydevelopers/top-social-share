@@ -19,4 +19,4 @@ Support for the following social networks is available: Facebook, Twitter, Pinte
 *  The plugin should also enable a shortcode to include the sharing bar inside a post content
 
 # Demo #
-https://www.loom.com/share/1b785731eb78432780754563f62cc3d0
+https://www.loom.com/share/f72af1d76bd74731968314e42604ae8d
