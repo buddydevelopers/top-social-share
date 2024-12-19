@@ -129,7 +129,7 @@ class TSS_Social_Share {
 		if ( ( is_singular() || is_page() ) && array_key_exists( 'tss_field_post_types_' . $current_post_type, $this->tss_option ) ) {
 			if ( array_key_exists( 'tss_field_icon_placement_floating_left', $this->tss_option ) ) {
 				$tss_icons = $this->build_the_tss_icons();
-				echo '<div class="tss-share-floating-bar">' . $tss_icons . '</div>';
+				echo '<div class="tss-share-floating-bar">' . $tss_icons . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Ignoring escaping for $tss_icons
 			}
 		}
 	}
@@ -216,10 +216,9 @@ class TSS_Social_Share {
 	/**
 	 * Add shortcode to add share bar.
 	 *
-	 * @param Array $atts shortcode attributes.
 	 * @return string $html social share bar
 	 */
-	public function tss_share_shortcode( $atts ) {
+	public function tss_share_shortcode() {
 		$html      = '<div class="tss-share-shortcode-output">';
 			$html .= $this->build_the_tss_icons();
 		$html     .= '</div>';
