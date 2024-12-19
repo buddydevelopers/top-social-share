@@ -85,11 +85,11 @@ class TSS_Settings {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-
+		$saved_setting = filter_input( INPUT_GET, 'settings-updated' ) ? filter_input( INPUT_GET, 'settings-updated' ) : '';
 		// check if the user have submitted the settings.
 		// WordPress will add the "settings-updated" $_GET parameter to the url.
-		if ( ! empty( $_GET['settings-updated'] ) ) {
-			// add settings saved message with the class of "updated".
+		if ( isset( $saved_setting ) && 'true' === $saved_setting ) {
+			// Add settings saved message with the class of "updated".
 			add_settings_error( 'tss_messages', 'tss_message', __( 'Settings Saved', 'top-social-share' ), 'updated' );
 		}
 
@@ -135,7 +135,6 @@ class TSS_Settings {
 		);
 
 		return apply_filters( 'tss_default_options', $defaults );
-
 	} // end tss_default_options.
 
 	/**
@@ -260,13 +259,10 @@ class TSS_Settings {
 	} // end tss_field_post_types_cb.
 
 	/**
-	 * Share buttons
-	 *
-	 * @param Array $args setting field data.
+	 * Share buttons.
 	 */
-	public function tss_field_share_buttons_cb( $args ) {
+	public function tss_field_share_buttons_cb() {
 
-		ob_start();
 		echo '<p>' . esc_attr__( 'Choose the services you want below.  Click a chosen service again to remove.  Reorder services by dragging and dropping as they appear above.', 'top-social-share' ) . '</p>';
 		?>
 		<div class="wrap">
@@ -317,7 +313,6 @@ class TSS_Settings {
 			?>
 		</div>
 		<?php
-		echo ob_get_clean();
 	}
 
 	/**
@@ -326,7 +321,6 @@ class TSS_Settings {
 	 * @param Array $args setting field data.
 	 */
 	public function tss_field_icon_size_cb( $args ) {
-		ob_start();
 		?>
 		<div class="wrap">
 			<small><?php esc_attr_e( 'Select size for sharing icons', 'top-social-share' ); ?></small>
@@ -363,7 +357,6 @@ class TSS_Settings {
 			</ul>
 		</div>
 		<?php
-		echo ob_get_clean();
 	}
 
 	/**
@@ -372,7 +365,6 @@ class TSS_Settings {
 	 * @param Array $args setting field data.
 	 */
 	public function tss_field_icon_style_cb( $args ) {
-		ob_start();
 		if ( array_key_exists( 'tss_field_icon_style', $this->tss_option ) ) {
 			$tss_field_icon_style = esc_attr( $this->tss_option['tss_field_icon_style'] );
 		} else {
@@ -410,7 +402,6 @@ class TSS_Settings {
 			</ul>
 		</div>
 		<?php
-		echo ob_get_clean();
 	}
 
 	/**
@@ -419,7 +410,6 @@ class TSS_Settings {
 	 * @param Array $args setting field data.
 	 */
 	public function tss_field_icon_placement_cb( $args ) {
-		ob_start();
 		?>
 		<div class="wrap">
 			<small><?php esc_attr_e( 'Select placement for the sharing icons', 'top-social-share' ); ?></small>
@@ -481,7 +471,6 @@ class TSS_Settings {
 			</ul>
 		</div>
 		<?php
-		echo ob_get_clean();
 	}
 }
 $instance = new TSS_Settings();

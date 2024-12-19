@@ -53,6 +53,5 @@ if ( ! function_exists( 'tss_social_sharing_options' ) ) {
 		 */
 		$tss_social_buttons = apply_filters_ref_array( 'tss_social_buttons', array( &$tss_social_buttons ) );
 		return $tss_social_buttons;
-
 	}
 }
