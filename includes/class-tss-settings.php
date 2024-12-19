@@ -241,20 +241,19 @@ class TSS_Settings {
 	 */
 	public function tss_field_post_types_cb( $args ) {
 		// Get the value of the setting we've registered with register_setting().
-		$public_post_types = get_post_types( array( 'public' => true ) );
-
+		$public_post_types = get_post_types( array( 'public' => true ), 'objects' );
 		foreach ( $public_post_types as $post_type ) {
 
-			if ( array_key_exists( 'tss_field_post_types_' . $post_type, $this->tss_option ) ) {
-				$is_checked = $this->tss_option[ 'tss_field_post_types_' . $post_type ];
+			if ( array_key_exists( 'tss_field_post_types_' . $post_type->name, $this->tss_option ) ) {
+				$is_checked = $this->tss_option[ 'tss_field_post_types_' . $post_type->name ];
 			} else {
 				$is_checked = '';
 			}
 
-			if ( 'attachment' !== $post_type ) {
+			if ( 'attachment' !== $post_type->name ) {
 				?>
-				<input type="checkbox" id="<?php echo esc_attr( $args['label_for'] . $post_type ); ?>" name="tss_options[<?php echo esc_attr( $args['label_for'] . $post_type ); ?>]" value="1" <?php checked( 1, $is_checked, true ); ?>/>
-				<label for="<?php echo esc_attr( $args['label_for'] . $post_type ); ?>"><?php echo esc_html( ucfirst( $post_type ) ); ?></label>
+				<input type="checkbox" id="<?php echo esc_attr( $args['label_for'] . $post_type->name ); ?>" name="tss_options[<?php echo esc_attr( $args['label_for'] . $post_type->name ); ?>]" value="1" <?php checked( 1, $is_checked, true ); ?>/>
+				<label for="<?php echo esc_attr( $args['label_for'] . $post_type->name ); ?>"><?php echo esc_html( ucfirst( $post_type->label ) ); ?></label>
 				<?php
 			}
 		}
