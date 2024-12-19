@@ -7,17 +7,17 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              http://naveengiri.com
+ * @link              http://buddydevelopers.com
  * @since             1.0.0
  * @package           TSS
  *
  * @wordpress-plugin
  * Plugin Name:     Top Social Share
- * Plugin URI:      http://naveengiri.com
+ * Plugin URI:      http://buddydevelopers.com
  * Description:     This plugin is to create social share functionality.
  * Version:         1.0.0
- * Author:          Naveen Giri
- * Author URI:      http://naveengiri.com
+ * Author:          BuddyDevelopers
+ * Author URI:      http://buddydevelopers.com
  * License:         GPL-2.0+
  * License URI:     http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:     top-social-share
