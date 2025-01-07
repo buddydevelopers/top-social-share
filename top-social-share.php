@@ -14,7 +14,6 @@
  *
  * @wordpress-plugin
  * Plugin Name:     Top Social Share
- * Plugin URI:      http://buddydevelopers.com
  * Description:     This plugin is to create social share functionality.
  * Version:         1.0.0
  * Author:          BuddyDevelopers
