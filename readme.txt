@@ -1,19 +1,19 @@
 === Top Social Share ===
 Contributors: buddydevelopers, 1naveengiri, bhargavbhandari90, piyushmultidots, wprajabarik
 Donate link: https://www.paypal.com/paypalme/1naveengiri/10
-Tags: social sharing, share buttons, Facebook share, Twitter share, WhatsApp share, social media integration, WordPress social share, post sharing, share to social media, social network, social share plugin, mobile sharing, responsive share buttons, easy sharing, social icons
+Tags: social sharing, share buttons, social share plugin, post sharing
 Requires at least: 4.0
-Tested up to: 4.8
+Tested up to: 6.7.1
 Stable tag: 1.0.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add beautiful and responsive social sharing buttons to your WordPress posts. Top Social Share makes it easy for users to share your content on Facebook, Twitter, and WhatsApp with just a click.
+Add beautiful, responsive social share buttons to WordPress posts. Share content easily on Facebook, Twitter, and WhatsApp with Top Social Share.
 
 == Description ==
 
- **Top Social Share** is a lightweight and user-friendly WordPress plugin designed to enhance the social sharing experience on your website. With simple integration and customizable buttons, this plugin enables your audience to share your posts effortlessly on popular social platforms like Facebook, Twitter, and WhatsApp.  
+ **Top Social Share** is a lightweight and user-friendly WordPress plugin designed to enhance the social sharing experience on your website. With simple integration and customizable buttons, this plugin enables your audience to share your posts effortlessly on popular social platforms like Facebook, Twitter, LinkedIN, Pinterest and WhatsApp.  
 
 ### Shortcode: 
 Top Social share plugin also provides a shortcode to embed the social sharing buttons in your website content, you can use the ```[top-share]```, and the buttons will appear.

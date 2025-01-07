@@ -210,7 +210,7 @@ class TSS_Settings {
 
 		add_settings_field(
 			'tss_field_icon_placement',
-			__( 'Sharing Icons Placement', 'tss-social-placement' ),
+			__( 'Sharing Icons Placement', 'top-social-share' ),
 			array( $this, 'tss_field_icon_placement_cb' ),
 			'tss',
 			'tss_section',
