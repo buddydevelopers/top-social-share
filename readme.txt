@@ -1,5 +1,5 @@
 === Top Social Share ===
-Contributors: buddydevelopers, 1naveengiri, bhargavbhandari90, piyushmultidots, wprajabarik
+Contributors: buddydevelopers, 1naveengiri, bhargavbhandari90, wprajabarik
 Donate link: https://www.paypal.com/paypalme/1naveengiri/10
 Tags: social sharing, share buttons, social share plugin, post sharing
 Requires at least: 4.0
@@ -90,10 +90,8 @@ If you have any issues or questions, please visit the support section in the Wor
 
 == Screenshots ==
 
-1. This screen shot description corresponds to screenshot-1.(png|jpg|jpeg|gif).
-2. This is the second screenshot
-3. Test 1
-4. Test 2
+1. Social Sharing option in the frontend
+2. Setting page to edit the social share options
 
 == Changelog ==
 * Option to share all types of posts on Facebook, Twitter, Pinterest, LinkedIn, WhatsApp
