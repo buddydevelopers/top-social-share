@@ -57,7 +57,6 @@ class TSS_Social_Share {
 	 *  Add share bar style.
 	 */
 	public function bd_tss_enqueue_script() {
-		global $post;
 		wp_enqueue_style( 'tss-style-handle', BD_TSS_PLUGINS_URL . 'assets/css/style.css', array(), BD_TSS_PLUGINS_VERSION );
 		// background color.
 		$additional_icon_color_style = '';
@@ -70,9 +69,7 @@ class TSS_Social_Share {
 			$fore_color                   = $this->tss_option['tss_field_icon_style_foreground_color'];
 			$additional_icon_color_style .= '.tss-social-div svg path{  fill:' . $this->tss_option['tss_field_icon_style_foreground_color'] . ' !important; }';
 		}
-		if ( ! empty( $post->ID ) ) {
-			wp_add_inline_style( 'tss-style-handle', $additional_icon_color_style );
-		}
+		wp_add_inline_style( 'tss-style-handle', $additional_icon_color_style );
 	}
 
 	/**
@@ -136,7 +133,7 @@ class TSS_Social_Share {
 		if ( ( is_singular() || is_page() ) && array_key_exists( 'tss_field_post_types_' . $current_post_type, $this->tss_option ) ) {
 			if ( array_key_exists( 'tss_field_icon_placement_floating_left', $this->tss_option ) ) {
 				$tss_icons = $this->bd_tss_build_share_icons();
-				echo '<div class="tss-share-floating-bar">' . wp_kses_post( $tss_icons ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Ignoring escaping for $tss_icons
+				echo '<div class="tss-share-floating-bar">' . wp_kses_post( $tss_icons ) . '</div>';
 			}
 		}
 	}
