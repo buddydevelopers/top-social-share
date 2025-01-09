@@ -48,6 +48,9 @@ class TSS_Social_Share {
 		add_action( 'wp_enqueue_scripts', array( $this, 'tss_enqueue_script' ) );
 		// Add shortcode here.
 		add_shortcode( 'top-share', array( $this, 'tss_share_shortcode' ) );
+
+		// Allow custom html to escaped.
+		add_filter( 'wp_kses_allowed_html', array( $this, 'top_social_share_allow_svg_attributes' ), 10, 1 );
 	}
 
 	/**
@@ -133,7 +136,7 @@ class TSS_Social_Share {
 		if ( ( is_singular() || is_page() ) && array_key_exists( 'tss_field_post_types_' . $current_post_type, $this->tss_option ) ) {
 			if ( array_key_exists( 'tss_field_icon_placement_floating_left', $this->tss_option ) ) {
 				$tss_icons = $this->build_the_tss_icons();
-				echo '<div class="tss-share-floating-bar">' . $tss_icons . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Ignoring escaping for $tss_icons
+				echo '<div class="tss-share-floating-bar">' . wp_kses_post( $tss_icons ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Ignoring escaping for $tss_icons
 			}
 		}
 	}
@@ -228,6 +231,51 @@ class TSS_Social_Share {
 		$html     .= '</div>';
 
 		return $html;
+	}
+
+	/**
+	 * Extends the allowed HTML tags and attributes for SVG support.
+	 *
+	 * This function modifies the `wp_kses_allowed_html` filter to allow SVG elements
+	 * and their respective attributes to be sanitized properly.
+	 *
+	 * @param array $tags The existing allowed HTML tags and attributes.
+	 * @return array Modified allowed HTML tags and attributes to include SVG support.
+	 */
+	public function top_social_share_allow_svg_attributes( $tags ) {
+		// Add support for SVG and its attributes.
+		$tags['svg'] = array(
+			'class'           => true,
+			'aria-hidden'     => true,
+			'aria-labelledby' => true,
+			'role'            => true,
+			'style'           => true,
+			'xmlns'           => true,
+			'width'           => true,
+			'height'          => true,
+			'viewbox'         => true,
+		);
+
+		$tags['path'] = array(
+			'd'    => true,
+			'fill' => true,
+		);
+
+		$tags['g'] = array(); // Add support for grouping if needed.
+
+		$tags['circle'] = array(
+			'cx' => true,
+			'cy' => true,
+			'r'  => true,
+		);
+
+		$tags['rect'] = array(
+			'width'  => true,
+			'height' => true,
+		);
+
+		// Add more SVG elements as needed.
+		return $tags;
 	}
 }
 $instance = new TSS_Social_Share();
