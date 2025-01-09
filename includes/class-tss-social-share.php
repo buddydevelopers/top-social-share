@@ -42,23 +42,23 @@ class TSS_Social_Share {
 	public function load() {
 		// get the setting data array.
 		$this->tss_option = get_option( 'tss_options' );
-		add_action( 'wp_footer', array( $this, 'tss_display_social_left' ) );
-		add_filter( 'the_content', array( $this, 'add_tss_social_icons_placement' ) );
-		add_filter( 'post_thumbnail_html', array( $this, 'add_tss_social_icons_inside_featured_image' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'tss_enqueue_script' ) );
+		add_action( 'wp_footer', array( $this, 'bd_tss_display_social_left' ) );
+		add_filter( 'the_content', array( $this, 'bd_tss_add_social_icons_placement' ) );
+		add_filter( 'post_thumbnail_html', array( $this, 'bd_tss_add_social_icons_inside_featured_image' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'bd_tss_enqueue_script' ) );
 		// Add shortcode here.
-		add_shortcode( 'top-share', array( $this, 'tss_share_shortcode' ) );
+		add_shortcode( 'top-share', array( $this, 'bd_tss_share_shortcode' ) );
 
 		// Allow custom html to escaped.
-		add_filter( 'wp_kses_allowed_html', array( $this, 'top_social_share_allow_svg_attributes' ), 10, 1 );
+		add_filter( 'wp_kses_allowed_html', array( $this, 'bd_tss_allow_svg_attributes' ), 10, 1 );
 	}
 
 	/**
 	 *  Add share bar style.
 	 */
-	public function tss_enqueue_script() {
+	public function bd_tss_enqueue_script() {
 		global $post;
-		wp_enqueue_style( 'tss-style-handle', TSS_PLUGINS_URL . 'assets/css/style.css', array(), TSS_PLUGINS_VERSION );
+		wp_enqueue_style( 'tss-style-handle', BD_TSS_PLUGINS_URL . 'assets/css/style.css', array(), BD_TSS_PLUGINS_VERSION );
 		// background color.
 		$additional_icon_color_style = '';
 		if ( ! empty( $this->tss_option['tss_field_icon_style'] ) && 'custom' === $this->tss_option['tss_field_icon_style'] ) {
@@ -80,7 +80,7 @@ class TSS_Social_Share {
 	 *
 	 * @return string Social sharing icons html
 	 */
-	public function build_the_tss_icons() {
+	public function bd_tss_build_share_icons() {
 
 		// Size.
 		if ( 'medium' === $this->tss_option['tss_field_icon_size'] ) {
@@ -97,7 +97,7 @@ class TSS_Social_Share {
 			$post_permalink             = get_permalink( $post->ID );
 			$post_title                 = $post->ID;
 			$post_attachment_url        = wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) );
-			$tss_social_buttons         = tss_social_sharing_options();
+			$tss_social_buttons         = bd_tss_social_sharing_options();
 			$social_share_options_count = count( $tss_social_buttons );
 			if ( array_key_exists( 'tss_social_icon_order_1', $this->tss_option ) ) {
 				// load reorderd options.
@@ -105,7 +105,7 @@ class TSS_Social_Share {
 					if ( array_key_exists( 'tss_social_icon_order_' . $tss_icon, $this->tss_option ) ) {
 						$tss_social_icon = $this->tss_option[ 'tss_social_icon_order_' . $tss_icon ];
 						if ( ! empty( $tss_social_buttons[ $tss_social_icon ] ) ) {
-							$share_btn_link = $this->tss_social_share_link( $tss_social_icon, $post->ID );
+							$share_btn_link = $this->bd_tss_social_share_link( $tss_social_icon, $post->ID );
 							if ( array_key_exists( 'tss_field_share_buttons_' . $tss_social_icon, $this->tss_option ) && ! empty( $share_btn_link ) ) {
 								$img   = ! empty( $tss_social_buttons[ $tss_social_icon ]['img'] ) ? $tss_social_buttons[ $tss_social_icon ]['img'] : esc_attr( $tss_social_buttons[ $tss_social_icon ]['label'] );
 								$html .= '<li data-tss-icon-name="' . esc_attr( $tss_social_icon ) . '" class="' . $tss_size_option . '"><a ' . $share_btn_link . ' title="' . esc_attr( $tss_social_buttons[ $tss_social_icon ]['label'] ) . '">' . $img . '</a></li>';
@@ -116,7 +116,7 @@ class TSS_Social_Share {
 			} else {
 				// load default options.
 				foreach ( $tss_social_buttons as $button_slug => $tss_social_button ) {
-					$share_btn_link = $this->tss_social_share_link( $button_slug, $post->ID );
+					$share_btn_link = $this->bd_tss_social_share_link( $button_slug, $post->ID );
 					if ( array_key_exists( 'tss_field_share_buttons_' . $button_slug, $this->tss_option ) && ! empty( $share_btn_link ) ) {
 						$img   = ! empty( $tss_social_buttons[ $button_slug ]['img'] ) ? $tss_social_buttons[ $button_slug ]['img'] : esc_attr( $tss_social_buttons[ $button_slug ]['label'] );
 						$html .= '<li data-tss-icon-name="' . esc_attr( $button_slug ) . '" class="' . $tss_size_option . '"><a ' . $share_btn_link . ' title="' . esc_attr( $tss_social_buttons[ $button_slug ]['label'] ) . '">' . $img . '</a></li>';
@@ -131,11 +131,11 @@ class TSS_Social_Share {
 	/**
 	 * Function to display social sharing options on left.
 	 */
-	public function tss_display_social_left() {
+	public function bd_tss_display_social_left() {
 		$current_post_type = get_post_type( get_the_ID() );
 		if ( ( is_singular() || is_page() ) && array_key_exists( 'tss_field_post_types_' . $current_post_type, $this->tss_option ) ) {
 			if ( array_key_exists( 'tss_field_icon_placement_floating_left', $this->tss_option ) ) {
-				$tss_icons = $this->build_the_tss_icons();
+				$tss_icons = $this->bd_tss_build_share_icons();
 				echo '<div class="tss-share-floating-bar">' . wp_kses_post( $tss_icons ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Ignoring escaping for $tss_icons
 			}
 		}
@@ -146,16 +146,16 @@ class TSS_Social_Share {
 	 *
 	 * @param String $content Post content with social sharing icons.
 	 */
-	public function add_tss_social_icons_placement( $content ) {
+	public function bd_tss_add_social_icons_placement( $content ) {
 		$current_post_type = get_post_type( get_the_ID() );
 		if ( in_the_loop() && ( is_singular() || is_page() ) && array_key_exists( 'tss_field_post_types_' . $current_post_type, $this->tss_option ) ) {
 
 			if ( array_key_exists( 'tss_field_icon_placement_below_post_title', $this->tss_option ) ) {
-				$tss_icons = $this->build_the_tss_icons();
+				$tss_icons = $this->bd_tss_build_share_icons();
 				$content   = $tss_icons . $content;
 			}
 			if ( array_key_exists( 'tss_field_icon_placement_after_post_content', $this->tss_option ) ) {
-				$tss_icons = $this->build_the_tss_icons();
+				$tss_icons = $this->bd_tss_build_share_icons();
 				$content   = $content . $tss_icons;
 			}
 		}
@@ -168,7 +168,7 @@ class TSS_Social_Share {
 	 *
 	 * @param String $html featured image with social sharing icons.
 	 */
-	public function add_tss_social_icons_inside_featured_image( $html ) {
+	public function bd_tss_add_social_icons_inside_featured_image( $html ) {
 		$current_post_type = get_post_type( get_the_ID() );
 		// only add when featured image exist.
 		if ( ( is_singular() || is_page() ) && array_key_exists( 'tss_field_post_types_' . $current_post_type, $this->tss_option ) && has_post_thumbnail() ) {
@@ -176,7 +176,7 @@ class TSS_Social_Share {
 				$post_thumbnail = $html;
 				$html           = '<div class="tss-featured-image-overlay">';
 				$html          .= $post_thumbnail;
-				$html          .= $this->build_the_tss_icons();
+				$html          .= $this->bd_tss_build_share_icons();
 				$html          .= '</div>';
 			}
 		}
@@ -189,7 +189,7 @@ class TSS_Social_Share {
 	 * @param String $option social share option name.
 	 * @param int    $post_id current post id.
 	 */
-	public function tss_social_share_link( $option, $post_id ) {
+	public function bd_tss_social_share_link( $option, $post_id ) {
 		if ( empty( $post_id ) ) {
 			global $post;
 			$post_id = $post->ID;
@@ -225,9 +225,9 @@ class TSS_Social_Share {
 	 *
 	 * @return string $html social share bar
 	 */
-	public function tss_share_shortcode() {
+	public function bd_tss_share_shortcode() {
 		$html      = '<div class="tss-share-shortcode-output">';
-			$html .= $this->build_the_tss_icons();
+			$html .= $this->bd_tss_build_share_icons();
 		$html     .= '</div>';
 
 		return $html;
@@ -242,7 +242,7 @@ class TSS_Social_Share {
 	 * @param array $tags The existing allowed HTML tags and attributes.
 	 * @return array Modified allowed HTML tags and attributes to include SVG support.
 	 */
-	public function top_social_share_allow_svg_attributes( $tags ) {
+	public function bd_tss_allow_svg_attributes( $tags ) {
 		// Add support for SVG and its attributes.
 		$tags['svg'] = array(
 			'class'           => true,

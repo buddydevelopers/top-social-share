@@ -42,45 +42,45 @@ class TSS_Settings {
 		// get the setting data array.
 		$this->tss_option = get_option( 'tss_options' );
 		/**
-		 * Register tss_options_page to the admin_menu action hook.
+		 * Register bd_tss_options_page to the admin_menu action hook.
 		 */
-		add_action( 'admin_menu', array( $this, 'tss_options_page' ) );
+		add_action( 'admin_menu', array( $this, 'bd_tss_options_page' ) );
 		/**
-		 * Register our tss_settings_init to the admin_init action hook.
+		 * Register our bd_tss_settings_init to the admin_init action hook.
 		 */
-		add_action( 'admin_init', array( $this, 'tss_settings_init' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'tss_enqueue_admin_script' ) );
+		add_action( 'admin_init', array( $this, 'bd_tss_settings_init' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'bd_tss_enqueue_admin_script' ) );
 	}
 
 	/**
 	 * Enqueue the wp color picket and the custom script required for the plugin setting.
 	 */
-	public function tss_enqueue_admin_script() {
+	public function bd_tss_enqueue_admin_script() {
 		// Css rules for Color Picker.
 		wp_enqueue_style( 'wp-color-picker' );
-		wp_enqueue_script( 'tss-script-handle', TSS_PLUGINS_URL . 'assets/js/scripts.js', array( 'wp-color-picker', 'jquery-ui-sortable' ), TSS_PLUGINS_VERSION, true );
-		wp_enqueue_style( 'tss-admin-style-handle', TSS_PLUGINS_URL . 'assets/css/admin-style.css', array(), TSS_PLUGINS_VERSION );
+		wp_enqueue_script( 'tss-script-handle', BD_TSS_PLUGINS_URL . 'assets/js/scripts.js', array( 'wp-color-picker', 'jquery-ui-sortable' ), BD_TSS_PLUGINS_VERSION, true );
+		wp_enqueue_style( 'tss-admin-style-handle', BD_TSS_PLUGINS_URL . 'assets/css/admin-style.css', array(), BD_TSS_PLUGINS_VERSION );
 	}
 
 	/**
 	 * Create the top level menu
 	 */
-	public function tss_options_page() {
+	public function bd_tss_options_page() {
 		// add top level menu page.
 		add_menu_page(
 			__( 'Top Social Sharing Plugin', 'top-social-share' ),
 			__( 'Social Sharing', 'top-social-share' ),
 			'manage_options',
 			'tss',
-			array( $this, 'tss_options_page_html_cb' ),
+			array( $this, 'bd_tss_options_page_html_cb' ),
 			'dashicons-share'
 		);
-	} //end tss_options_page.
+	} //end bd_tss_options_page.
 
 	/**
 	 * Top level menu callback function
 	 */
-	public function tss_options_page_html_cb() {
+	public function bd_tss_options_page_html_cb() {
 		// check user capabilities.
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
@@ -116,7 +116,7 @@ class TSS_Settings {
 	/**
 	 * Provides default values for the Input Options.
 	 */
-	public function tss_default_options() {
+	public function bd_tss_default_options() {
 
 		$defaults = array(
 			'tss_field_post_types_post'              => '1',
@@ -134,15 +134,15 @@ class TSS_Settings {
 			'tss_field_icon_placement_floating_left' => '1',
 		);
 
-		return apply_filters( 'tss_default_options', $defaults );
-	} // end tss_default_options.
+		return apply_filters( 'bd_tss_default_options', $defaults );
+	} // end bd_tss_default_options.
 
 	/**
 	 * Initialize custom option and settings
 	 */
-	public function tss_settings_init() {
+	public function bd_tss_settings_init() {
 		if ( false === $this->tss_option ) {
-			add_option( 'tss_options', apply_filters( 'tss_default_options', $this->tss_default_options() ) );
+			add_option( 'tss_options', apply_filters( 'bd_tss_default_options', $this->bd_tss_default_options() ) );
 		} // end if.
 
 		// register a new setting for "tss" page.
@@ -152,14 +152,14 @@ class TSS_Settings {
 		add_settings_section(
 			'tss_section',
 			__( 'Settings', 'top-social-share' ),
-			array( $this, 'tss_intro_section_cb' ),
+			array( $this, 'bd_tss_intro_section_cb' ),
 			'tss'
 		);
 
 		add_settings_field(
 			'tss_field_post_types',
 			__( 'Post Types', 'top-social-share' ),
-			array( $this, 'tss_field_post_types_cb' ),
+			array( $this, 'bd_tss_field_post_types_cb' ),
 			'tss',
 			'tss_section',
 			array(
@@ -172,7 +172,7 @@ class TSS_Settings {
 		add_settings_field(
 			'tss_field_share_buttons',
 			__( 'Share Buttons', 'top-social-share' ),
-			array( $this, 'tss_field_share_buttons_cb' ),
+			array( $this, 'bd_tss_field_share_buttons_cb' ),
 			'tss',
 			'tss_section',
 			array(
@@ -185,7 +185,7 @@ class TSS_Settings {
 		add_settings_field(
 			'tss_field_icon_size',
 			__( 'Sharing Icons Size', 'top-social-share' ),
-			array( $this, 'tss_field_icon_size_cb' ),
+			array( $this, 'bd_tss_field_icon_size_cb' ),
 			'tss',
 			'tss_section',
 			array(
@@ -198,7 +198,7 @@ class TSS_Settings {
 		add_settings_field(
 			'tss_field_icon_style',
 			__( 'Sharing Icons Style', 'top-social-share' ),
-			array( $this, 'tss_field_icon_style_cb' ),
+			array( $this, 'bd_tss_field_icon_style_cb' ),
 			'tss',
 			'tss_section',
 			array(
@@ -211,7 +211,7 @@ class TSS_Settings {
 		add_settings_field(
 			'tss_field_icon_placement',
 			__( 'Sharing Icons Placement', 'top-social-share' ),
-			array( $this, 'tss_field_icon_placement_cb' ),
+			array( $this, 'bd_tss_field_icon_placement_cb' ),
 			'tss',
 			'tss_section',
 			array(
@@ -220,7 +220,7 @@ class TSS_Settings {
 				'tss_custom_data' => 'tss-plugin-icon-placement',
 			)
 		);
-	} //end tss_settings_init.
+	} //end bd_tss_settings_init.
 
 	/**
 	 * Sanitize the `tss_options` array input.
@@ -305,7 +305,7 @@ class TSS_Settings {
 	 *
 	 * @param Array $args setting field data.
 	 */
-	public function tss_intro_section_cb( $args ) {
+	public function bd_tss_intro_section_cb( $args ) {
 		?>
 		<p id="<?php echo esc_attr( $args['id'] ); ?>"><?php echo wp_kses_data( 'Top Social share plugin also provide a shortcode to embed the social sharing buttons in your website content, you can use the <code>[top-share]</code>, and the butttons will appear.', 'top-social-share' ); ?></p>
 		<?php
@@ -316,7 +316,7 @@ class TSS_Settings {
 	 *
 	 * @param Array $args setting field data.
 	 */
-	public function tss_field_post_types_cb( $args ) {
+	public function bd_tss_field_post_types_cb( $args ) {
 		// Get the value of the setting we've registered with register_setting().
 		$public_post_types = get_post_types( array( 'public' => true ), 'objects' );
 		foreach ( $public_post_types as $post_type ) {
@@ -334,12 +334,12 @@ class TSS_Settings {
 				<?php
 			}
 		}
-	} // end tss_field_post_types_cb.
+	} // end bd_tss_field_post_types_cb.
 
 	/**
 	 * Share buttons.
 	 */
-	public function tss_field_share_buttons_cb() {
+	public function bd_tss_field_share_buttons_cb() {
 
 		echo '<p>' . esc_attr__( 'Choose the services you want below.  Click a chosen service again to remove.  Reorder services by dragging and dropping as they appear above.', 'top-social-share' ) . '</p>';
 		?>
@@ -347,7 +347,7 @@ class TSS_Settings {
 			<small><?php esc_html_e( 'Enable sharing icons and reorder them here. WhatsApp icon only appear on mobile.', 'top-social-share' ); ?></small>
 			<ul class="sharing-icons-lists" id="tss-social-icon-sortable">
 				<?php
-				$tss_social_buttons = tss_social_sharing_options();
+				$tss_social_buttons = bd_tss_social_sharing_options();
 				if ( array_key_exists( 'tss_social_icon_order_1', $this->tss_option ) ) {
 					// load reorderd options.
 					$social_share_options_count = count( $tss_social_buttons );
@@ -398,7 +398,7 @@ class TSS_Settings {
 	 *
 	 * @param Array $args setting field data.
 	 */
-	public function tss_field_icon_size_cb( $args ) {
+	public function bd_tss_field_icon_size_cb( $args ) {
 		?>
 		<div class="wrap">
 			<small><?php esc_attr_e( 'Select size for sharing icons', 'top-social-share' ); ?></small>
@@ -442,7 +442,7 @@ class TSS_Settings {
 	 *
 	 * @param Array $args setting field data.
 	 */
-	public function tss_field_icon_style_cb( $args ) {
+	public function bd_tss_field_icon_style_cb( $args ) {
 		if ( array_key_exists( 'tss_field_icon_style', $this->tss_option ) ) {
 			$tss_field_icon_style = esc_attr( $this->tss_option['tss_field_icon_style'] );
 		} else {
@@ -487,7 +487,7 @@ class TSS_Settings {
 	 *
 	 * @param Array $args setting field data.
 	 */
-	public function tss_field_icon_placement_cb( $args ) {
+	public function bd_tss_field_icon_placement_cb( $args ) {
 		?>
 		<div class="wrap">
 			<small><?php esc_attr_e( 'Select placement for the sharing icons', 'top-social-share' ); ?></small>
