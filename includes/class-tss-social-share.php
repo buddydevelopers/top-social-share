@@ -54,16 +54,8 @@ class TSS_Social_Share {
 	 *  Add share bar style.
 	 */
 	public function tss_enqueue_script() {
+		global $post;
 		wp_enqueue_style( 'tss-style-handle', TSS_PLUGINS_URL . 'assets/css/style.css', array(), TSS_PLUGINS_VERSION );
-	}
-
-	/**
-	 * Build the Social Sharing Icons
-	 *
-	 * @return string Social sharing icons html
-	 */
-	public function build_the_tss_icons() {
-
 		// background color.
 		$additional_icon_color_style = '';
 		if ( ! empty( $this->tss_option['tss_field_icon_style'] ) && 'custom' === $this->tss_option['tss_field_icon_style'] ) {
@@ -75,6 +67,18 @@ class TSS_Social_Share {
 			$fore_color                   = $this->tss_option['tss_field_icon_style_foreground_color'];
 			$additional_icon_color_style .= '.tss-social-div svg path{  fill:' . $this->tss_option['tss_field_icon_style_foreground_color'] . ' !important; }';
 		}
+		if ( ! empty( $post->ID ) ) {
+			wp_add_inline_style( 'tss-style-handle', $additional_icon_color_style );
+		}
+	}
+
+	/**
+	 * Build the Social Sharing Icons
+	 *
+	 * @return string Social sharing icons html
+	 */
+	public function build_the_tss_icons() {
+
 		// Size.
 		if ( 'medium' === $this->tss_option['tss_field_icon_size'] ) {
 			$tss_size_option = 'tss-size-2x';
@@ -86,7 +90,7 @@ class TSS_Social_Share {
 		global $post;
 		$html = '';
 		if ( ! empty( $post->ID ) ) {
-			$html                       = '<div class="tss-social-div"><style>' . $additional_icon_color_style . '</style><ul>';
+			$html                       = '<div class="tss-social-div"><ul>';
 			$post_permalink             = get_permalink( $post->ID );
 			$post_title                 = $post->ID;
 			$post_attachment_url        = wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) );
