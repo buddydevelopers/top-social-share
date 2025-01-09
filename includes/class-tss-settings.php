@@ -146,7 +146,7 @@ class TSS_Settings {
 		} // end if.
 
 		// register a new setting for "tss" page.
-		register_setting( 'tss', 'tss_options' );
+		register_setting( 'tss', 'tss_options', array( $this, 'bd_tss_sanitize_options' ) );
 
 		// register a new section in the "tss" page.
 		add_settings_section(
@@ -221,6 +221,84 @@ class TSS_Settings {
 			)
 		);
 	} //end tss_settings_init.
+
+	/**
+	 * Sanitize the `tss_options` array input.
+	 *
+	 * This function processes and sanitizes all settings under `tss_options` to ensure
+	 * safe and valid data is saved in the options table.
+	 *
+	 * @param array $input The raw input from the settings form.
+	 * @return array $sanitized_input The sanitized data to be saved in the options table.
+	 */
+	public function bd_tss_sanitize_options( $input ) {
+		$sanitized_input = array();
+
+		// Sanitize post types selection (checkboxes).
+		$public_post_types = get_post_types( array( 'public' => true ), 'objects' );
+		foreach ( $public_post_types as $post_type ) {
+			if ( isset( $input[ 'tss_field_post_types_' . $post_type->name ] ) ) {
+				$sanitized_input[ 'tss_field_post_types_' . $post_type->name ] = isset( $input[ 'tss_field_post_types_' . $post_type->name ] ) ? '1' : '0';
+			}
+		}
+
+		// Sanitize share buttons selection (checkboxes).
+		$sanitized_input['tss_field_share_buttons_facebook']  = isset( $input['tss_field_share_buttons_facebook'] ) ? '1' : '0';
+		$sanitized_input['tss_field_share_buttons_twitter']   = isset( $input['tss_field_share_buttons_twitter'] ) ? '1' : '0';
+		$sanitized_input['tss_field_share_buttons_pinterest'] = isset( $input['tss_field_share_buttons_pinterest'] ) ? '1' : '0';
+		$sanitized_input['tss_field_share_buttons_linkedIn']  = isset( $input['tss_field_share_buttons_linkedIn'] ) ? '1' : '0';
+		$sanitized_input['tss_field_share_buttons_whatsapp']  = isset( $input['tss_field_share_buttons_whatsapp'] ) ? '1' : '0';
+
+		// Sanitize icon size (select input).
+		$allowed_icon_sizes = array( 'small', 'medium', 'large' );
+		if ( isset( $input['tss_field_icon_size'] ) && in_array( $input['tss_field_icon_size'], $allowed_icon_sizes, true ) ) {
+			$sanitized_input['tss_field_icon_size'] = sanitize_text_field( $input['tss_field_icon_size'] );
+		} else {
+			$sanitized_input['tss_field_icon_size'] = 'small'; // Default value if invalid.
+		}
+
+		// Sanitize icon style (select input).
+		$allowed_icon_styles = array( 'original', 'custom' );
+		if ( isset( $input['tss_field_icon_style'] ) && in_array( $input['tss_field_icon_style'], $allowed_icon_styles, true ) ) {
+			$sanitized_input['tss_field_icon_style'] = sanitize_text_field( $input['tss_field_icon_style'] );
+		} else {
+			$sanitized_input['tss_field_icon_style'] = 'original'; // Default value if invalid.
+		}
+
+		// Sanitize background color for icon style (hex color).
+		if ( isset( $input['tss_field_icon_style_bg_color'] ) ) {
+			$sanitized_input['tss_field_icon_style_bg_color'] = sanitize_hex_color( $input['tss_field_icon_style_bg_color'] );
+		}
+
+		// Sanitize foreground style (select input).
+		$allowed_foregrounds = array( 'original', 'custom' );
+		if ( isset( $input['tss_field_icon_style_foreground'] ) && in_array( $input['tss_field_icon_style_foreground'], $allowed_foregrounds, true ) ) {
+			$sanitized_input['tss_field_icon_style_foreground'] = sanitize_text_field( $input['tss_field_icon_style_foreground'] );
+		} else {
+			$sanitized_input['tss_field_icon_style_foreground'] = 'original'; // Default value if invalid.
+		}
+
+		// Sanitize foreground color (hex color).
+		if ( isset( $input['tss_field_icon_style_foreground_color'] ) ) {
+			$sanitized_input['tss_field_icon_style_foreground_color'] = sanitize_hex_color( $input['tss_field_icon_style_foreground_color'] );
+		}
+
+		// Sanitize icon placement (checkbox).
+		if ( isset( $input['tss_field_icon_placement_floating_left'] ) ) {
+			$sanitized_input['tss_field_icon_placement_floating_left'] = sanitize_text_field( $input['tss_field_icon_placement_floating_left'] );
+		}
+		if ( isset( $input['tss_field_icon_placement_below_post_title'] ) ) {
+			$sanitized_input['tss_field_icon_placement_below_post_title'] = sanitize_text_field( $input['tss_field_icon_placement_below_post_title'] );
+		}
+		if ( isset( $input['tss_field_icon_placement_inside_feature_image'] ) ) {
+			$sanitized_input['tss_field_icon_placement_inside_feature_image'] = sanitize_text_field( $input['tss_field_icon_placement_inside_feature_image'] );
+		}
+		if ( isset( $input['tss_field_icon_placement_after_post_content'] ) ) {
+			$sanitized_input['tss_field_icon_placement_after_post_content'] = sanitize_text_field( $input['tss_field_icon_placement_after_post_content'] );
+		}
+
+		return $sanitized_input;
+	}
 
 	/**
 	 * Intro section for shortcode
