@@ -85,7 +85,7 @@ class TSS_Settings {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		$saved_setting = filter_input( INPUT_GET, 'settings-updated' ) ? filter_input( INPUT_GET, 'settings-updated' ) : '';
+		$saved_setting = filter_input( INPUT_GET, 'settings-updated', FILTER_SANITIZE_STRING ) ? filter_input( INPUT_GET, 'settings-updated', FILTER_SANITIZE_STRING ) : '';
 		// check if the user have submitted the settings.
 		// WordPress will add the "settings-updated" $_GET parameter to the url.
 		if ( isset( $saved_setting ) && 'true' === $saved_setting ) {
