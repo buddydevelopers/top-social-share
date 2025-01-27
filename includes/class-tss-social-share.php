@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * @author     buddydevelopers <buddydevelopers@gmail.com>
  * @since 2.0.0
  */
-class TSS_Social_Share {
+class BD_TSS_Social_Share {
 
 	/**
 	 * Plugin settings data array.
@@ -275,4 +275,4 @@ class TSS_Social_Share {
 		return $tags;
 	}
 }
-$instance = new TSS_Social_Share();
+$instance = new BD_TSS_Social_Share();

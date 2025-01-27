@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * @author     buddydevelopers <buddydevelopers@gmail.com>
  * @since 2.0.0
  */
-class TSS_Settings {
+class BD_TSS_Settings {
 
 	/**
 	 * Plugin settings data array.
@@ -146,7 +146,13 @@ class TSS_Settings {
 		} // end if.
 
 		// register a new setting for "tss" page.
-		register_setting( 'tss', 'tss_options', array( $this, 'bd_tss_sanitize_options' ) );
+		register_setting(
+			'tss', // Option group (matches the group in settings_fields)
+			'tss_options', // Option name (stored in the database)
+			array(
+				'sanitize_callback' => array( $this, 'bd_tss_sanitize_options' )
+			) // Sanitization callback
+		);
 
 		// register a new section in the "tss" page.
 		add_settings_section(
@@ -551,4 +557,4 @@ class TSS_Settings {
 		<?php
 	}
 }
-$instance = new TSS_Settings();
+$instance = new BD_TSS_Settings();
