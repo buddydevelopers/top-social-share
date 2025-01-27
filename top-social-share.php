@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:     Top Social Share
  * Description:     This plugin is to create social share functionality.
- * Version:         1.0.0
+ * Version:         1.0.1
  * Author:          BuddyDevelopers
  * Author URI:      http://buddydevelopers.com
  * License:         GPL-2.0+
@@ -37,7 +37,7 @@ if ( ! defined( 'BD_TSS_PLUGINS_PATH' ) ) {
 }
 // Define plugin version.
 if ( ! defined( 'BD_TSS_PLUGINS_VERSION' ) ) {
-	define( 'BD_TSS_PLUGINS_VERSION', '1.0.0' );
+	define( 'BD_TSS_PLUGINS_VERSION', '1.0.1' );
 }
 
 if ( ! function_exists( 'bd_tss_plugin_activate' ) ) {

@@ -93,7 +93,11 @@ If you have any issues or questions, please visit the support section in the Wor
 1. Social Sharing option in the frontend
 2. Setting page to edit the social share options
 
-== Changelog ==
+
+= 1.0.1 =
+* Add wp coding standard
+
+= 1.0.0 =
 * Option to share all types of posts on Facebook, Twitter, Pinterest, LinkedIn, WhatsApp
 * Option to customise the icons
 * Option to position the Social share bar 
