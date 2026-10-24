@@ -74,6 +74,9 @@ jobs:
     name: Plugin functionality
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: write
 
     services:
       mysql:
@@ -108,6 +111,7 @@ jobs:
       - name: Install WordPress and activate the plugin
         run: |
           set -euo pipefail
+          {
           wp core download --path=/tmp/wordpress
           wp config create \
             --path=/tmp/wordpress \
@@ -126,6 +130,7 @@ jobs:
           ln -sfn "${GITHUB_WORKSPACE}" /tmp/wordpress/wp-content/plugins/top-social-share
           wp plugin activate top-social-share --path=/tmp/wordpress
           wp plugin status top-social-share --path=/tmp/wordpress
+          } 2>&1 | tee /tmp/tss-functional-tests.log
 
       - name: Run functional tests
         working-directory: /tmp/wordpress
@@ -450,5 +455,73 @@ jobs:
 
           WP_CLI::success( 'Top Social Share functional tests passed.' );
           PHP
-          php -l /tmp/tss-functional-tests.php
-          wp eval-file /tmp/tss-functional-tests.php
+          {
+            php -l /tmp/tss-functional-tests.php
+            wp eval-file /tmp/tss-functional-tests.php
+          } 2>&1 | tee -a /tmp/tss-functional-tests.log
+
+      - name: Open a GitHub issue when functional tests fail
+        if: failure() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT: ${{ github.sha }}
+          REF_NAME: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          gh label create functional-test \
+            --color B60205 \
+            --description "Automated plugin functionality check failed" \
+            --force
+
+          if [ -f /tmp/tss-functional-tests.log ]; then
+            tail -c 12000 /tmp/tss-functional-tests.log | tr -d '\000' > /tmp/tss-functional-excerpt.log
+          else
+            echo "The functionality check stopped before it could write a log. See the workflow run for the full output." > /tmp/tss-functional-excerpt.log
+          fi
+
+          failure_line="$(grep -m1 -E 'FAIL:|Error:|Fatal error:' /tmp/tss-functional-excerpt.log || true)"
+          {
+            echo "The plugin functionality check failed."
+            echo
+            echo "- Workflow run: ${RUN_URL}"
+            echo "- Commit: \`${COMMIT}\`"
+            echo "- Branch: \`${REF_NAME}\`"
+            echo "- Event: \`${EVENT_NAME}\`"
+            if [ -n "${failure_line}" ]; then
+              echo "- Failure: \`${failure_line}\`"
+            fi
+            echo
+            echo '```'
+            cat /tmp/tss-functional-excerpt.log
+            echo
+            echo '```'
+          } > /tmp/tss-issue-body.md
+
+          existing="$(gh issue list --state open --label functional-test --limit 1 --json number --jq '.[0].number // empty' || true)"
+          if [ -n "${existing}" ]; then
+            gh issue comment "${existing}" --body-file /tmp/tss-issue-body.md
+            echo "Updated issue #${existing}"
+          else
+            url="$(gh issue create --title "Functional tests failed" --label functional-test --body-file /tmp/tss-issue-body.md)"
+            echo "Created ${url}"
+          fi
+
+      - name: Close the functional-test issue when tests pass
+        if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT: ${{ github.sha }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          existing="$(gh issue list --state open --label functional-test --limit 1 --json number --jq '.[0].number // empty' || true)"
+          if [ -z "${existing}" ]; then
+            echo "No open functional-test issue."
+            exit 0
+          fi
+          gh issue comment "${existing}" --body "Functional tests passed on \`${REF_NAME}\` (\`${COMMIT}\`). ${RUN_URL}"
+          gh issue close "${existing}" --reason completed
+          echo "Closed issue #${existing}"
