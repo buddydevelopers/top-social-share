@@ -23,8 +23,6 @@ if ( ! class_exists( 'BD_TSS_Settings' ) ) {
 		/**
 		 * Plugin settings data array.
 		 *
-		 * @access  private
-		 *
 		 * @var Array  $tss_option settings array
 		 */
 		private $tss_option;
@@ -148,11 +146,11 @@ if ( ! class_exists( 'BD_TSS_Settings' ) ) {
 
 			// register a new setting for "tss" page.
 			register_setting(
-				'tss', // Option group (matches the group in settings_fields)
-				'tss_options', // Option name (stored in the database)
+				'tss', // Option group (matches the group in settings_fields).
+				'tss_options', // Option name (stored in the database).
 				array(
-					'sanitize_callback' => array( $this, 'bd_tss_sanitize_options' )
-				) // Sanitization callback
+					'sanitize_callback' => array( $this, 'bd_tss_sanitize_options' ),
+				) // Sanitization callback.
 			);
 
 			// register a new section in the "tss" page.

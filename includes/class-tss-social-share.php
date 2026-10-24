@@ -23,8 +23,6 @@ if ( ! class_exists( 'BD_TSS_Social_Share' ) ) {
 		/**
 		 * Plugin settings data array.
 		 *
-		 * @access  private
-		 *
 		 * @var Array  $tss_option settings array
 		 */
 		private $tss_option;
