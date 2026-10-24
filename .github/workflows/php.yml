@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
-      contents: read
+      contents: write
       issues: write
 
     services:
@@ -143,16 +143,94 @@ jobs:
            */
 
           /**
-           * Stop the run when an expectation fails.
+           * Developer notes for a failed check: what broke and which code to change.
+           *
+           * @param string $message Assertion text.
+           * @return array
+           */
+          function tss_failure_guide( $message ) {
+          	$guides = array(
+          		'default options are stored on boot' => array(
+          			'title'    => 'Default share settings are never saved outside wp-admin',
+          			'expected' => 'After the plugin boots, tss_options is the default array: Facebook, Twitter, LinkedIn, Pinterest, and WhatsApp on, posts and pages on, small icons, and the floating placement on.',
+          			'actual'   => 'get_option( \'tss_options\' ) is not an array. The option was never created, so WordPress returns false.',
+          			'why'      => 'Defaults are written only from BD_TSS_Settings::bd_tss_settings_init(), which runs on admin_init. bd_tss_plugin_activate() loads that settings class only when is_admin() is true. The functionality check runs through WP-CLI, and WP-CLI does not define WP_ADMIN, so is_admin() is false. The settings class is skipped, add_option() never runs, and tss_options stays missing. The same gap affects any boot that is not an admin request, including activation from WP-CLI: the front end then reads tss_options before it exists.',
+          			'fix'      => 'Seed tss_options from bd_tss_default_options() whenever the option is missing, including from register_activation_hook. Do not require is_admin() for that write. Keep admin_init for registering the settings screen.',
+          			'where'    => array(
+          				array(
+          					'file'   => 'top-social-share.php',
+          					'lines'  => '47-57',
+          					'symbol' => 'bd_tss_plugin_activate()',
+          					'detail' => 'Loads includes/class-tss-settings.php only inside is_admin(). Otherwise the file that saves defaults is never included.',
+          				),
+          				array(
+          					'file'   => 'includes/class-tss-settings.php',
+          					'lines'  => '40-51',
+          					'symbol' => 'BD_TSS_Settings::load()',
+          					'detail' => 'Reads tss_options once in the constructor and attaches bd_tss_settings_init to admin_init.',
+          				),
+          				array(
+          					'file'   => 'includes/class-tss-settings.php',
+          					'lines'  => '142-145',
+          					'symbol' => 'BD_TSS_Settings::bd_tss_settings_init()',
+          					'detail' => 'This is the only add_option() call for tss_options, and it runs only when the constructor saw false.',
+          				),
+          			),
+          		),
+          	);
+
+          	if ( isset( $guides[ $message ] ) ) {
+          		return $guides[ $message ];
+          	}
+
+          	return array(
+          		'title'    => $message,
+          		'expected' => 'This functionality check should pass.',
+          		'actual'   => 'The check stopped at this assertion: ' . $message,
+          		'why'      => 'The assertion in .github/workflows/php.yml did not match the plugin behavior.',
+          		'fix'      => 'Search the plugin for the function named by the assertion and compare it with the expected value in the test.',
+          		'where'    => array(),
+          	);
+          }
+
+          /**
+           * Stop the run when an expectation fails and save a report for the GitHub issue.
            *
            * @param bool   $condition Result of the expectation.
            * @param string $message   What was being checked.
+           * @param array  $context   Extra facts to show in the issue.
            */
-          function tss_assert( $condition, $message ) {
-          	if ( ! $condition ) {
-          		WP_CLI::error( 'FAIL: ' . $message );
+          function tss_assert( $condition, $message, $context = array() ) {
+          	if ( $condition ) {
+          		WP_CLI::log( 'PASS: ' . $message );
+          		return;
           	}
-          	WP_CLI::log( 'PASS: ' . $message );
+
+          	$option = get_option( 'tss_options' );
+          	$report = array(
+          		'message'          => $message,
+          		'guide'            => tss_failure_guide( $message ),
+          		'context'          => $context,
+          		'wordpress'        => get_bloginfo( 'version' ),
+          		'is_admin'         => function_exists( 'is_admin' ) ? (bool) is_admin() : null,
+          		'wp_admin'         => defined( 'WP_ADMIN' ) ? (bool) WP_ADMIN : null,
+          		'settings_loaded'  => class_exists( 'BD_TSS_Settings', false ),
+          		'share_loaded'     => class_exists( 'BD_TSS_Social_Share', false ),
+          		'option_type'      => gettype( $option ),
+          		'admin_init_count' => did_action( 'admin_init' ),
+          	);
+          	file_put_contents( '/tmp/tss-failure.json', wp_json_encode( $report ) );
+          	WP_CLI::log(
+          		sprintf(
+          			'DIAG is_admin=%s settings_loaded=%s share_loaded=%s option_type=%s admin_init=%d',
+          			isset( $report['is_admin'] ) && $report['is_admin'] ? 'true' : 'false',
+          			$report['settings_loaded'] ? 'true' : 'false',
+          			$report['share_loaded'] ? 'true' : 'false',
+          			$report['option_type'],
+          			(int) $report['admin_init_count']
+          		)
+          	);
+          	WP_CLI::error( 'FAIL: ' . $message );
           }
 
           /**
@@ -460,6 +538,11 @@ jobs:
             wp eval-file /tmp/tss-functional-tests.php
           } 2>&1 | tee -a /tmp/tss-functional-tests.log
 
+      - name: Set up Chrome for the failure screenshot
+        if: failure() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v1
+
       - name: Open a GitHub issue when functional tests fail
         if: failure() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         env:
@@ -468,43 +551,51 @@ jobs:
           COMMIT: ${{ github.sha }}
           REF_NAME: ${{ github.ref_name }}
           EVENT_NAME: ${{ github.event_name }}
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: |
           set -euo pipefail
+          python3 .github/scripts/functional-failure-report.py \
+            --workspace "${GITHUB_WORKSPACE}" \
+            --report /tmp/tss-failure.json \
+            --log /tmp/tss-functional-tests.log \
+            --out /tmp/tss-report
+
+          screenshot="/tmp/tss-report/failure.png"
+          chrome="${CHROME_PATH:-}"
+          if [ -z "${chrome}" ]; then
+            chrome="$(command -v google-chrome || command -v chrome || true)"
+          fi
+          if [ -n "${chrome}" ]; then
+            "${chrome}" --headless --disable-gpu --no-sandbox --hide-scrollbars \
+              --window-size=1280,1680 \
+              --screenshot="${screenshot}" \
+              "file:///tmp/tss-report/failure.html" || true
+          fi
+
+          image_url=""
+          if [ -f "${screenshot}" ]; then
+            image_url="$(python3 .github/scripts/functional-failure-report.py --upload-screenshot "${screenshot}" || true)"
+          fi
+
+          python3 .github/scripts/functional-failure-report.py \
+            --workspace "${GITHUB_WORKSPACE}" \
+            --report /tmp/tss-failure.json \
+            --log /tmp/tss-functional-tests.log \
+            --out /tmp/tss-report \
+            --image-url "${image_url}"
+
           gh label create functional-test \
             --color B60205 \
             --description "Automated plugin functionality check failed" \
             --force
 
-          if [ -f /tmp/tss-functional-tests.log ]; then
-            tail -c 12000 /tmp/tss-functional-tests.log | tr -d '\000' > /tmp/tss-functional-excerpt.log
-          else
-            echo "The functionality check stopped before it could write a log. See the workflow run for the full output." > /tmp/tss-functional-excerpt.log
-          fi
-
-          failure_line="$(grep -m1 -E 'FAIL:|Error:|Fatal error:' /tmp/tss-functional-excerpt.log || true)"
-          {
-            echo "The plugin functionality check failed."
-            echo
-            echo "- Workflow run: ${RUN_URL}"
-            echo "- Commit: \`${COMMIT}\`"
-            echo "- Branch: \`${REF_NAME}\`"
-            echo "- Event: \`${EVENT_NAME}\`"
-            if [ -n "${failure_line}" ]; then
-              echo "- Failure: \`${failure_line}\`"
-            fi
-            echo
-            echo '```'
-            cat /tmp/tss-functional-excerpt.log
-            echo
-            echo '```'
-          } > /tmp/tss-issue-body.md
-
+          title="$(cat /tmp/tss-report/title.txt)"
           existing="$(gh issue list --state open --label functional-test --limit 1 --json number --jq '.[0].number // empty' || true)"
           if [ -n "${existing}" ]; then
-            gh issue comment "${existing}" --body-file /tmp/tss-issue-body.md
+            gh issue edit "${existing}" --title "${title}" --body-file /tmp/tss-report/issue.md
             echo "Updated issue #${existing}"
           else
-            url="$(gh issue create --title "Functional tests failed" --label functional-test --body-file /tmp/tss-issue-body.md)"
+            url="$(gh issue create --title "${title}" --label functional-test --body-file /tmp/tss-report/issue.md)"
             echo "Created ${url}"
           fi
 
