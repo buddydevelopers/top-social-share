@@ -41,6 +41,9 @@ if ( ! class_exists( 'BD_TSS_Social_Share' ) ) {
 		public function load() {
 			// get the setting data array.
 			$this->tss_option = get_option( 'tss_options' );
+			if ( ! is_array( $this->tss_option ) ) {
+				$this->tss_option = array();
+			}
 			add_action( 'wp_footer', array( $this, 'bd_tss_display_social_left' ) );
 			add_filter( 'the_content', array( $this, 'bd_tss_add_social_icons_placement' ) );
 			add_filter( 'post_thumbnail_html', array( $this, 'bd_tss_add_social_icons_inside_featured_image' ) );

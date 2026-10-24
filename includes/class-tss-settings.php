@@ -38,8 +38,9 @@ if ( ! class_exists( 'BD_TSS_Settings' ) ) {
 		 * Load settings files.
 		 */
 		public function load() {
-			// get the setting data array.
+			// Store defaults even when this request is not wp-admin.
 			$this->tss_option = get_option( 'tss_options' );
+			$this->bd_tss_ensure_default_options();
 			/**
 			 * Register bd_tss_options_page to the admin_menu action hook.
 			 */
@@ -137,12 +138,22 @@ if ( ! class_exists( 'BD_TSS_Settings' ) ) {
 		} // end bd_tss_default_options.
 
 		/**
+		 * Create tss_options from the defaults when it has not been saved yet.
+		 */
+		private function bd_tss_ensure_default_options() {
+			if ( is_array( $this->tss_option ) ) {
+				return;
+			}
+
+			$this->tss_option = $this->bd_tss_default_options();
+			add_option( 'tss_options', $this->tss_option );
+		}
+
+		/**
 		 * Initialize custom option and settings
 		 */
 		public function bd_tss_settings_init() {
-			if ( false === $this->tss_option ) {
-				add_option( 'tss_options', apply_filters( 'bd_tss_default_options', $this->bd_tss_default_options() ) );
-			} // end if.
+			$this->bd_tss_ensure_default_options();
 
 			// register a new setting for "tss" page.
 			register_setting(

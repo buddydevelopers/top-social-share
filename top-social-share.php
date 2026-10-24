@@ -45,14 +45,26 @@ if ( ! function_exists( 'bd_tss_plugin_activate' ) ) {
 	 * Function to call required plugin files on activation.
 	 */
 	function bd_tss_plugin_activate() {
-		// include all required files here.
-		if ( is_admin() ) { // only load setting file when it is admin panel.
-			require_once BD_TSS_PLUGINS_PATH . 'includes/class-tss-settings.php';
-		} else { // If it is not admin panel load this file to display social share buttons.
+		// Settings load on every request so tss_options exists before the front end reads it.
+		require_once BD_TSS_PLUGINS_PATH . 'includes/class-tss-settings.php';
+		if ( ! is_admin() ) {
 			require_once BD_TSS_PLUGINS_PATH . 'includes/class-tss-social-share.php';
 		}
 		// Load all common functions.
 		require_once BD_TSS_PLUGINS_PATH . 'includes/functions.php';
 	}
 	add_action( 'plugins_loaded', 'bd_tss_plugin_activate' );
+}
+
+if ( ! function_exists( 'bd_tss_activate_plugin' ) ) {
+	/**
+	 * Seed default share settings when the plugin is activated.
+	 *
+	 * Activation runs after plugins_loaded, so the boot callback above has not
+	 * included the settings class yet.
+	 */
+	function bd_tss_activate_plugin() {
+		require_once BD_TSS_PLUGINS_PATH . 'includes/class-tss-settings.php';
+	}
+	register_activation_hook( __FILE__, 'bd_tss_activate_plugin' );
 }
