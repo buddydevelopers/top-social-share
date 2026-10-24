@@ -40,7 +40,47 @@ FALLBACK_GUIDES = {
                 "detail": "This is the only add_option() call for tss_options, and it runs only when the constructor saw false.",
             },
         ],
-    }
+    },
+    "front end share bar is missing": {
+        "title": "Front end share bar does not render for visitors",
+        "screenshot_alt": "Front end of the post when the share bar failed",
+        "expected": "A published post shows the floating share bar, icons around the content, and the [top-share] shortcode. Facebook, Twitter, Pinterest, and LinkedIn are visible. WhatsApp appears only in a mobile browser.",
+        "actual": "The public post does not show that share bar.",
+        "why": "On a normal front-end request is_admin() is false, so bd_tss_plugin_activate() never loads the settings class and tss_options is never created. The share class still loads and reads that missing option. bd_tss_build_share_icons() then uses tss_options as an array, which throws on PHP 8 and the public page dies before the icons render.",
+        "fix": "Save the default tss_options array without requiring is_admin(), and make bd_tss_build_share_icons() return nothing when tss_options is not an array instead of reading offsets on false.",
+        "where": [
+            {
+                "file": "top-social-share.php",
+                "lines": "47-57",
+                "symbol": "bd_tss_plugin_activate()",
+                "detail": "Loads the settings class only for admin requests, so a visitor never triggers add_option().",
+            },
+            {
+                "file": "includes/class-tss-settings.php",
+                "lines": "142-145",
+                "symbol": "BD_TSS_Settings::bd_tss_settings_init()",
+                "detail": "The only place tss_options is created, and only on admin_init.",
+            },
+            {
+                "file": "includes/class-tss-social-share.php",
+                "lines": "41-49",
+                "symbol": "BD_TSS_Social_Share::load()",
+                "detail": "Hooks the floating bar, content placement, featured image, and [top-share] shortcode on the front end.",
+            },
+            {
+                "file": "includes/class-tss-social-share.php",
+                "lines": "81-98",
+                "symbol": "BD_TSS_Social_Share::bd_tss_build_share_icons()",
+                "detail": "Reads tss_option as an array. A missing option is false and this call fatals on the public page.",
+            },
+            {
+                "file": "includes/class-tss-social-share.php",
+                "lines": "211-214",
+                "symbol": "BD_TSS_Social_Share::bd_tss_social_share_link()",
+                "detail": "WhatsApp markup is returned only when wp_is_mobile() is true.",
+            },
+        ],
+    },
 }
 
 
@@ -270,7 +310,8 @@ def write_body(destination, guide, runtime, meta, log_text, image_url):
     log_excerpt = log_text[-8000:] if log_text else "No log was captured."
     image = ""
     if image_url:
-        image = f"\n![Functional check failure]({image_url})\n"
+        alt = guide.get("screenshot_alt") or "Functional check failure"
+        image = f"\n![{alt}]({image_url})\n"
     body = f"""## {guide.get("title") or "Plugin functionality check failed"}
 
 The functionality check failed on **{meta.get("message")}**.
@@ -373,11 +414,11 @@ def github_request(method, url, token, payload=None, ok_status=()):
         raise SystemExit(f"GitHub API {method} {url} failed: {error.code} {detail}")
 
 
-def upload_screenshot(image_path):
+def upload_screenshot(image_path, name=None):
     """Store the screenshot on functional-test-reports and return a URL that renders in issues."""
     repo = os.environ["GITHUB_REPOSITORY"]
     token = os.environ["GH_TOKEN"]
-    run_id = os.environ["GITHUB_RUN_ID"]
+    run_id = name or os.environ["GITHUB_RUN_ID"]
     branch = "functional-test-reports"
     path = f".github/functional-test-reports/{run_id}.png"
     shot = pathlib.Path(image_path).read_bytes()
@@ -413,13 +454,14 @@ def main():
     parser.add_argument("--out", default="/tmp/tss-report")
     parser.add_argument("--image-url", default="")
     parser.add_argument("--upload-screenshot", default="")
+    parser.add_argument("--upload-name", default="")
     parser.add_argument("--run-url", default=os.environ.get("RUN_URL", ""))
     parser.add_argument("--commit", default=os.environ.get("COMMIT", ""))
     parser.add_argument("--ref-name", default=os.environ.get("REF_NAME", ""))
     parser.add_argument("--event-name", default=os.environ.get("EVENT_NAME", ""))
     args = parser.parse_args()
     if args.upload_screenshot:
-        print(upload_screenshot(args.upload_screenshot))
+        print(upload_screenshot(args.upload_screenshot, args.upload_name or None))
         return
     build(args)
 

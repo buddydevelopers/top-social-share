@@ -616,3 +616,165 @@ jobs:
           gh issue comment "${existing}" --body "Functional tests passed on \`${REF_NAME}\` (\`${COMMIT}\`). ${RUN_URL}"
           gh issue close "${existing}" --reason completed
           echo "Closed issue #${existing}"
+
+  frontend:
+    name: Front end
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      issues: write
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: wordpress
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      WP_CLI_ALLOW_ROOT: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mysqli, mbstring
+          tools: wp-cli
+          coverage: none
+
+      - name: Install WordPress and activate the plugin
+        run: |
+          set -euo pipefail
+          wp core download --path=/tmp/wordpress
+          wp config create \
+            --path=/tmp/wordpress \
+            --dbname=wordpress \
+            --dbuser=root \
+            --dbpass=root \
+            --dbhost=127.0.0.1
+          wp config set WP_DEBUG true --raw --path=/tmp/wordpress
+          wp config set WP_DEBUG_DISPLAY true --raw --path=/tmp/wordpress
+          wp config set WP_DISABLE_FATAL_ERROR_HANDLER true --raw --path=/tmp/wordpress
+          wp core install \
+            --path=/tmp/wordpress \
+            --url=http://127.0.0.1:8080 \
+            --title="Top Social Share Tests" \
+            --admin_user=admin \
+            --admin_password="test-password" \
+            --admin_email=admin@example.com \
+            --skip-email
+          ln -sfn "${GITHUB_WORKSPACE}" /tmp/wordpress/wp-content/plugins/top-social-share
+          wp plugin activate top-social-share --path=/tmp/wordpress
+
+      - name: Set up Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Open the public post in Chrome
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+        run: |
+          set -euo pipefail
+          php -d display_errors=1 -S 127.0.0.1:8080 -t /tmp/wordpress >/tmp/tss-php-server.log 2>&1 &
+          for _ in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8080/; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS -o /dev/null http://127.0.0.1:8080/
+          chrome="${CHROME_PATH:-}"
+          if [ -z "${chrome}" ]; then
+            chrome="$(command -v google-chrome || command -v chrome || true)"
+          fi
+          if [ -z "${chrome}" ]; then
+            mkdir -p /tmp/tss-frontend
+            echo "Chrome is not available, so the public post could not be opened." | tee /tmp/tss-frontend/check.log
+            exit 1
+          fi
+          python3 .github/scripts/frontend-check.py --wp /tmp/wordpress --chrome "${chrome}"
+
+      - name: Open a GitHub issue when the front end fails
+        if: failure() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT: ${{ github.sha }}
+          REF_NAME: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          primary_url=""
+          extra_images=""
+          if [ -f /tmp/tss-frontend/screenshots.tsv ]; then
+            while IFS=$'\t' read -r stem path; do
+              [ -n "${stem}" ] || continue
+              [ -f "${path}" ] || continue
+              url="$(python3 .github/scripts/functional-failure-report.py --upload-screenshot "${path}" --upload-name "${GITHUB_RUN_ID}-frontend-${stem}" || true)"
+              if [ -z "${primary_url}" ]; then
+                primary_url="${url}"
+              elif [ -n "${url}" ]; then
+                extra_images="${extra_images}
+
+          ### ${stem} screenshot
+
+          ![Front end ${stem}](${url})
+          "
+              fi
+            done < /tmp/tss-frontend/screenshots.tsv
+          fi
+
+          python3 .github/scripts/functional-failure-report.py \
+            --workspace "${GITHUB_WORKSPACE}" \
+            --report /tmp/tss-frontend/result.json \
+            --log /tmp/tss-frontend/check.log \
+            --out /tmp/tss-frontend-issue \
+            --image-url "${primary_url}"
+          if [ -n "${extra_images}" ]; then
+            printf '%s\n' "${extra_images}" >> /tmp/tss-frontend-issue/issue.md
+          fi
+
+          gh label create frontend-test \
+            --color B60205 \
+            --description "Front-end share bar check failed" \
+            --force
+          title="$(cat /tmp/tss-frontend-issue/title.txt)"
+          existing="$(gh issue list --state open --label frontend-test --limit 1 --json number --jq '.[0].number // empty' || true)"
+          if [ -n "${existing}" ]; then
+            gh issue edit "${existing}" --title "${title}" --body-file /tmp/tss-frontend-issue/issue.md
+            echo "Updated issue #${existing}"
+          else
+            url="$(gh issue create --title "${title}" --label frontend-test --body-file /tmp/tss-frontend-issue/issue.md)"
+            echo "Created ${url}"
+          fi
+
+      - name: Close the front-end issue when the public post renders
+        if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT: ${{ github.sha }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          existing="$(gh issue list --state open --label frontend-test --limit 1 --json number --jq '.[0].number // empty' || true)"
+          if [ -z "${existing}" ]; then
+            echo "No open front-end issue."
+            exit 0
+          fi
+          gh issue comment "${existing}" --body "The public post rendered the share bar on \`${REF_NAME}\` (\`${COMMIT}\`). ${RUN_URL}"
+          gh issue close "${existing}" --reason completed
+          echo "Closed issue #${existing}"
